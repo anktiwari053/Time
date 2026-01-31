@@ -14,15 +14,15 @@ function Dashboard() {
     const fetchStats = async () => {
       try {
         const [projectsRes, teamsRes, themesRes] = await Promise.all([
-          api.get('/api/projects'),
-          api.get('/api/team'),
-          api.get('/api/themes')
+          api.get('/projects'),
+          api.get('/team'),
+          api.get('/themes')
         ]);
         
         setStats({
-          projects: projectsRes.data.length || 0,
-          teams: teamsRes.data.length || 0,
-          themes: themesRes.data.length || 0
+          projects: (projectsRes.data.data || projectsRes.data).length || 0,
+          teams: (teamsRes.data.data || teamsRes.data).length || 0,
+          themes: (themesRes.data.data || themesRes.data).length || 0
         });
       } catch (error) {
         console.error('Error fetching stats:', error);

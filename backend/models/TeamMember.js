@@ -18,11 +18,6 @@ const teamMemberSchema = new mongoose.Schema({
     required: [true, 'Work detail is required'],
     trim: true
   },
-  theme: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Theme',
-    required: [true, 'Team member must be linked to a theme']
-  },
   image: {
     type: String,
     default: null
@@ -42,8 +37,6 @@ teamMemberSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
-teamMemberSchema.index({ theme: 1 });
 
 module.exports = mongoose.model('TeamMember', teamMemberSchema);
 

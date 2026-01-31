@@ -188,7 +188,10 @@ exports.getProjectWithThemes = async (req, res) => {
       });
     }
 
-    const themes = await Theme.find({ project: req.params.id });
+    const themes = await Theme.find({ project: req.params.id })
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

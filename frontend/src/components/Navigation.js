@@ -23,6 +23,9 @@ const Navigation = () => {
             <Nav.Link as={Link} to="/projects">
               Projects
             </Nav.Link>
+            <Nav.Link as={Link} to="/themes">
+              Themes
+            </Nav.Link>
             <Nav.Link as={Link} to="/team">
               Team Members
             </Nav.Link>

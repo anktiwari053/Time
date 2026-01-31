@@ -6,20 +6,7 @@ const Theme = require('../models/Theme');
 // @access  Public
 exports.getAllTeamMembers = async (req, res) => {
   try {
-    const { theme } = req.query;
-    let query = {};
-    
-    if (theme) {
-      query.theme = theme;
-    }
-
-    const teamMembers = await TeamMember.find(query).populate('theme', 'name project').populate({
-      path: 'theme',
-      populate: {
-        path: 'project',
-        select: 'name'
-      }
-    }).sort({ createdAt: -1 });
+    const teamMembers = await TeamMember.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -40,13 +27,7 @@ exports.getAllTeamMembers = async (req, res) => {
 // @access  Public
 exports.getTeamMember = async (req, res) => {
   try {
-    const teamMember = await TeamMember.findById(req.params.id).populate({
-      path: 'theme',
-      populate: {
-        path: 'project',
-        select: 'name description status'
-      }
-    });
+    const teamMember = await TeamMember.findById(req.params.id);
 
     if (!teamMember) {
       return res.status(404).json({
@@ -73,22 +54,13 @@ exports.getTeamMember = async (req, res) => {
 // @access  Private
 exports.createTeamMember = async (req, res) => {
   try {
-    const { name, role, workDetail, theme } = req.body;
+    const { name, role, workDetail } = req.body;
 
     // Validation
-    if (!name || !role || !workDetail || !theme) {
+    if (!name || !role || !workDetail) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, role, workDetail, and theme'
-      });
-    }
-
-    // Check if theme exists
-    const themeExists = await Theme.findById(theme);
-    if (!themeExists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Theme not found'
+        message: 'Please provide name, role, and workDetail'
       });
     }
 
@@ -102,22 +74,13 @@ exports.createTeamMember = async (req, res) => {
       name,
       role,
       workDetail,
-      theme,
       image: imageUrl
-    });
-
-    const populatedMember = await TeamMember.findById(teamMember._id).populate({
-      path: 'theme',
-      populate: {
-        path: 'project',
-        select: 'name'
-      }
     });
 
     res.status(201).json({
       success: true,
       message: 'Team member created successfully',
-      data: populatedMember
+      data: teamMember
     });
   } catch (error) {
     res.status(500).json({
@@ -142,31 +105,30 @@ exports.updateTeamMember = async (req, res) => {
       });
     }
 
-    // If theme is being updated, verify it exists
-    if (req.body.theme) {
-      const themeExists = await Theme.findById(req.body.theme);
-      if (!themeExists) {
-        return res.status(404).json({
-          success: false,
-          message: 'Theme not found'
-        });
-      }
+    const { name, role, workDetail } = req.body;
+
+    // Validation
+    if (!name || !role || !workDetail) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide name, role, and workDetail'
+      });
+    }
+
+    // Handle image file
+    let imageUrl = teamMember.image; // Keep existing if no new image
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
     }
 
     teamMember = await TeamMember.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { name, role, workDetail, image: imageUrl },
       {
         new: true,
         runValidators: true
       }
-    ).populate({
-      path: 'theme',
-      populate: {
-        path: 'project',
-        select: 'name'
-      }
-    });
+    );
 
     res.status(200).json({
       success: true,

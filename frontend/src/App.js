@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectDetails from './pages/ProjectDetails';
+import Themes from './pages/Themes';
 import ThemeDetails from './pages/ThemeDetails';
 import TeamMembers from './pages/TeamMembers';
 import Login from './pages/Login';
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
+            <Route path="/themes" element={<Themes />} />
             <Route path="/themes/:id" element={<ThemeDetails />} />
             <Route path="/team" element={<TeamMembers />} />
             <Route path="/login" element={<Login />} />

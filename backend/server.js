@@ -31,7 +31,7 @@ app.get('/api/health', (req, res) => {
 
 // Connect to MongoDB
 mongoose
-  .connect( 'mongodb://localhost:27017/project_management')
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ MongoDB Connected');
     

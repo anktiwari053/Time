@@ -1,21 +1,22 @@
 const Theme = require('../models/Theme');
 const Project = require('../models/Project');
 const TeamMember = require('../models/TeamMember');
-const { sendThemeNotification } = require('../utils/emailService');
+const Admin = require('../models/Admin');
+
+// Allowed roles for theme head
+const ALLOWED_THEME_HEAD_ROLES = ['Lead', 'Manager', 'Senior Developer'];
 
 // @desc    Get all themes
 // @route   GET /api/themes
 // @access  Public
 exports.getAllThemes = async (req, res) => {
   try {
-    const { project } = req.query;
-    let query = {};
-    
-    if (project) {
-      query.project = project;
-    }
-
-    const themes = await Theme.find(query).populate('project', 'name status').sort({ createdAt: -1 });
+    const themes = await Theme.find()
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image')
+      .populate('createdBy', 'username')
+      .populate('project', 'name')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -36,7 +37,10 @@ exports.getAllThemes = async (req, res) => {
 // @access  Public
 exports.getTheme = async (req, res) => {
   try {
-    const theme = await Theme.findById(req.params.id).populate('project', 'name description status');
+    const theme = await Theme.findById(req.params.id)
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image')
+      .populate('createdBy', 'username');
 
     if (!theme) {
       return res.status(404).json({
@@ -60,51 +64,151 @@ exports.getTheme = async (req, res) => {
 
 // @desc    Create theme
 // @route   POST /api/themes
-// @access  Private
+// @access  Private (Admin)
 exports.createTheme = async (req, res) => {
   try {
-    const { name, description, primaryColor, secondaryColor, project } = req.body;
+    const { name, description } = req.body;
 
     // Validation
-    if (!name || !project) {
+    if (!name || !description || name.trim() === '' || description.trim() === '') {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name and project'
+        message: 'Please provide name and description'
       });
     }
 
-    // Check if project exists
-    const projectExists = await Project.findById(project);
-    if (!projectExists) {
-      return res.status(404).json({
+    // Ensure user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
         success: false,
-        message: 'Project not found'
+        message: 'Not authorized to create theme'
       });
-    }
-
-    // Handle image file
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
     }
 
     const theme = await Theme.create({
       name,
       description,
-      primaryColor: primaryColor || '#000000',
-      secondaryColor: secondaryColor || '#FFFFFF',
-      project,
-      image: imageUrl
+      members: [],
+      themeHead: null,
+      createdBy: req.user.id
     });
-
-    const populatedTheme = await Theme.findById(theme._id).populate('project', 'name');
-
-    // Send notification
-    await sendThemeNotification(theme.name, projectExists.name, 'Added');
 
     res.status(201).json({
       success: true,
       message: 'Theme created successfully',
+      data: theme
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Add members to theme
+// @route   PUT /api/themes/:id/members
+// @access  Private (Admin)
+exports.addMembersToTheme = async (req, res) => {
+  try {
+    const { memberIds } = req.body;
+
+    if (!memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide memberIds array'
+      });
+    }
+
+    const theme = await Theme.findById(req.params.id);
+    if (!theme) {
+      return res.status(404).json({
+        success: false,
+        message: 'Theme not found'
+      });
+    }
+
+    // Check if members exist
+    const foundMembers = await TeamMember.find({ _id: { $in: memberIds } });
+    if (foundMembers.length !== memberIds.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Some members not found'
+      });
+    }
+
+    // Add members to theme (avoid duplicates)
+    const existingMembers = new Set(theme.members.map(id => id.toString()));
+    const newMembers = memberIds.filter(id => !existingMembers.has(id.toString()));
+
+    if (newMembers.length > 0) {
+      await Theme.updateOne({ _id: req.params.id }, { $push: { members: { $each: newMembers } } });
+    }
+
+    const populatedTheme = await Theme.findById(req.params.id)
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image');
+
+    res.status(200).json({
+      success: true,
+      message: 'Members added to theme successfully',
+      data: populatedTheme
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Assign/change theme head
+// @route   PUT /api/themes/:id/theme-head
+// @access  Private (Admin)
+exports.assignThemeHead = async (req, res) => {
+  try {
+    const { memberId } = req.body;
+
+    const theme = await Theme.findById(req.params.id);
+    if (!theme) {
+      return res.status(404).json({
+        success: false,
+        message: 'Theme not found'
+      });
+    }
+
+    if (memberId) {
+      // Check if member exists and is in theme members
+      const member = await TeamMember.findById(memberId);
+      if (!member) {
+        return res.status(400).json({
+          success: false,
+          message: 'Member not found'
+        });
+      }
+
+      if (!theme.members.includes(memberId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Theme head must be one of the theme members'
+        });
+      }
+
+      await Theme.updateOne({ _id: req.params.id }, { themeHead: memberId });
+    } else {
+      // Remove theme head
+      await Theme.updateOne({ _id: req.params.id }, { themeHead: null });
+    }
+
+    const populatedTheme = await Theme.findById(req.params.id)
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image');
+
+    res.status(200).json({
+      success: true,
+      message: 'Theme head updated successfully',
       data: populatedTheme
     });
   } catch (error) {
@@ -118,11 +222,12 @@ exports.createTheme = async (req, res) => {
 
 // @desc    Update theme
 // @route   PUT /api/themes/:id
-// @access  Private
+// @access  Private (Admin)
 exports.updateTheme = async (req, res) => {
   try {
-    let theme = await Theme.findById(req.params.id).populate('project', 'name');
+    const { name, description } = req.body;
 
+    const theme = await Theme.findById(req.params.id);
     if (!theme) {
       return res.status(404).json({
         success: false,
@@ -130,34 +235,19 @@ exports.updateTheme = async (req, res) => {
       });
     }
 
-    // If project is being updated, verify it exists
-    if (req.body.project) {
-      const projectExists = await Project.findById(req.body.project);
-      if (!projectExists) {
-        return res.status(404).json({
-          success: false,
-          message: 'Project not found'
-        });
-      }
-    }
+    if (name) theme.name = name;
+    if (description) theme.description = description;
 
-    theme = await Theme.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    ).populate('project', 'name');
+    await theme.save();
 
-    // Send notification
-    const projectName = theme.project.name;
-    await sendThemeNotification(theme.name, projectName, 'Updated');
+    const populatedTheme = await Theme.findById(theme._id)
+      .populate('members', 'name role workDetail image')
+      .populate('themeHead', 'name role workDetail image');
 
     res.status(200).json({
       success: true,
       message: 'Theme updated successfully',
-      data: theme
+      data: populatedTheme
     });
   } catch (error) {
     res.status(500).json({
@@ -170,7 +260,7 @@ exports.updateTheme = async (req, res) => {
 
 // @desc    Delete theme
 // @route   DELETE /api/themes/:id
-// @access  Private
+// @access  Private (Admin)
 exports.deleteTheme = async (req, res) => {
   try {
     const theme = await Theme.findById(req.params.id);
@@ -182,46 +272,11 @@ exports.deleteTheme = async (req, res) => {
       });
     }
 
-    // Delete all team members associated with this theme
-    await TeamMember.deleteMany({ theme: req.params.id });
-
     await Theme.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,
       message: 'Theme deleted successfully'
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Get theme with team members
-// @route   GET /api/themes/:id/team
-// @access  Public
-exports.getThemeWithTeam = async (req, res) => {
-  try {
-    const theme = await Theme.findById(req.params.id).populate('project', 'name description status');
-
-    if (!theme) {
-      return res.status(404).json({
-        success: false,
-        message: 'Theme not found'
-      });
-    }
-
-    const teamMembers = await TeamMember.find({ theme: req.params.id });
-
-    res.status(200).json({
-      success: true,
-      data: {
-        theme,
-        teamMembers
-      }
     });
   } catch (error) {
     res.status(500).json({

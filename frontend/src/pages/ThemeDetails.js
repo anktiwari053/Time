@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Spinner, Table, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Spinner, Badge } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getThemeWithTeam } from '../services/api';
+import api from '../services/api';
 
 const ThemeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [theme, setTheme] = useState(null);
-  const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,9 +16,8 @@ const ThemeDetails = () => {
   const fetchThemeDetails = async () => {
     try {
       setLoading(true);
-      const response = await getThemeWithTeam(id);
-      setTheme(response.data.data.theme);
-      setTeamMembers(response.data.data.teamMembers);
+      const response = await api.get(`/themes/${id}`);
+      setTheme(response.data.data);
     } catch (error) {
       console.error('Error fetching theme details:', error);
     } finally {
@@ -58,54 +56,28 @@ const ThemeDetails = () => {
         <Col>
           <button 
             className="btn btn-outline-secondary mb-3" 
-            onClick={() => navigate(`/projects/${theme.project._id}`)}
+            onClick={() => navigate('/themes')}
           >
-            ← Back to Project
+            ← Back to Themes
           </button>
           <Card>
-            {theme.image && (
-              <Card.Img variant="top" src={`http://localhost:5000${theme.image}`} alt={theme.name} style={{ height: '300px', objectFit: 'cover' }} />
-            )}
             <Card.Body>
               <h1>{theme.name}</h1>
               <p className="text-muted">{theme.description}</p>
               <div className="mt-3">
                 <div className="mb-3">
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      width: '30px',
-                      height: '30px',
-                      backgroundColor: theme.primaryColor,
-                      marginRight: '10px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px'
-                    }}
-                    title={`Primary: ${theme.primaryColor}`}
-                  ></span>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      width: '30px',
-                      height: '30px',
-                      backgroundColor: theme.secondaryColor,
-                      marginRight: '10px',
-                      border: '1px solid #ccc',
-                      borderRadius: '4px'
-                    }}
-                    title={`Secondary: ${theme.secondaryColor}`}
-                  ></span>
+                  <strong>Theme Head:</strong>
+                  {theme.themeHead ? (
+                    <Badge bg="success" className="ms-2 fs-6">
+                      👑 {theme.themeHead.name} ({theme.themeHead.role})
+                    </Badge>
+                  ) : (
+                    <Badge bg="secondary" className="ms-2">Not assigned</Badge>
+                  )}
                 </div>
-                <strong>Project: </strong>
-                <Badge bg="info" className="ms-2">
-                  {theme.project.name}
-                </Badge>
-                <Badge 
-                  bg={theme.project.status === 'completed' ? 'success' : 'warning'}
-                  className="ms-2"
-                >
-                  {theme.project.status}
-                </Badge>
+                <div className="mb-3">
+                  <strong>Total Members:</strong> {theme.members?.length || 0}
+                </div>
               </div>
             </Card.Body>
           </Card>
@@ -114,32 +86,41 @@ const ThemeDetails = () => {
 
       <Row>
         <Col>
-          <h2 className="mb-4">Team Members ({teamMembers.length})</h2>
-          {teamMembers.length === 0 ? (
+          <h2 className="mb-4">Theme Members</h2>
+          {!theme.members || theme.members.length === 0 ? (
             <Card>
               <Card.Body className="text-center">
-                <p className="text-muted">No team members assigned to this theme yet.</p>
+                <p className="text-muted">No members assigned to this theme yet.</p>
               </Card.Body>
             </Card>
           ) : (
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Work Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teamMembers.map((member) => (
-                  <tr key={member._id}>
-                    <td><strong>{member.name}</strong></td>
-                    <td>{member.role}</td>
-                    <td>{member.workDetail}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <Row>
+              {theme.members.map((member) => (
+                <Col md={6} lg={4} key={member._id} className="mb-3">
+                  <Card className={theme.themeHead && theme.themeHead._id === member._id ? 'border-warning' : ''}>
+                    <Card.Body>
+                      <Card.Title className="d-flex align-items-center">
+                        {member.name}
+                        {theme.themeHead && theme.themeHead._id === member._id && (
+                          <Badge bg="warning" className="ms-2">Theme Head</Badge>
+                        )}
+                      </Card.Title>
+                      <Card.Text>
+                        <strong>Role:</strong> {member.role}<br />
+                        <strong>Work Detail:</strong> {member.workDetail}
+                      </Card.Text>
+                      {member.image && (
+                        <img 
+                          src={`http://localhost:5000${member.image}`} 
+                          alt={member.name} 
+                          style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} 
+                        />
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
           )}
         </Col>
       </Row>

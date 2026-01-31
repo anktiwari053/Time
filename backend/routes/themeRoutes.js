@@ -6,19 +6,20 @@ const {
   createTheme,
   updateTheme,
   deleteTheme,
-  getThemeWithTeam
+  addMembersToTheme,
+  assignThemeHead
 } = require('../controllers/themeController');
 const { protect, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
 
 // Public routes
 router.get('/', getAllThemes);
 router.get('/:id', getTheme);
-router.get('/:id/team', getThemeWithTeam);
 
 // Protected routes (admin only)
-router.post('/', protect, authorize('admin'), upload.single('image'), createTheme);
-router.put('/:id', protect, authorize('admin'), upload.single('image'), updateTheme);
+router.post('/', protect, authorize('admin'), createTheme);
+router.put('/:id', protect, authorize('admin'), updateTheme);
+router.put('/:id/members', protect, authorize('admin'), addMembersToTheme);
+router.put('/:id/theme-head', protect, authorize('admin'), assignThemeHead);
 router.delete('/:id', protect, authorize('admin'), deleteTheme);
 
 module.exports = router;

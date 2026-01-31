@@ -12,22 +12,31 @@ const themeSchema = new mongoose.Schema({
     required: [true, 'Theme description is required'],
     trim: true
   },
-  primaryColor: {
-    type: String,
-    default: '#000000'
-  },
-  secondaryColor: {
-    type: String,
-    default: '#FFFFFF'
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TeamMember'
+  }],
+  themeHead: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TeamMember',
+    default: null,
+    validate: {
+      validator: function(value) {
+        // If themeHead is set, it must be in the members array
+        return !value || this.members.includes(value);
+      },
+      message: 'Theme head must be one of the theme members'
+    }
   },
   project: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
-    required: [true, 'Theme must be linked to a project']
-  },
-  image: {
-    type: String,
     default: null
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   createdAt: {
     type: Date,
@@ -46,7 +55,11 @@ themeSchema.pre('save', function(next) {
 });
 
 // Index for faster queries
-themeSchema.index({ project: 1 });
+themeSchema.index({ createdBy: 1 });
+themeSchema.index({ projects: 1 });
+themeSchema.index({ members: 1 });
+
+module.exports = mongoose.model('Theme', themeSchema);
 
 module.exports = mongoose.model('Theme', themeSchema);
 

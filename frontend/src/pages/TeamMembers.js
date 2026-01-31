@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Spinner, Table, Badge } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Spinner, Table } from 'react-bootstrap';
 import { getTeamMembers } from '../services/api';
 
 const TeamMembers = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTeamMembers();
@@ -58,8 +56,6 @@ const TeamMembers = () => {
                   <th>Image</th>
                   <th>Name</th>
                   <th>Role</th>
-                  <th>Theme</th>
-                  <th>Project</th>
                   <th>Work Details</th>
                 </tr>
               </thead>
@@ -75,37 +71,6 @@ const TeamMembers = () => {
                     </td>
                     <td><strong>{member.name}</strong></td>
                     <td>{member.role}</td>
-                    <td>
-                      {member.theme ? (
-                        <span
-                          style={{ cursor: 'pointer', color: '#0d6efd' }}
-                          onClick={() => navigate(`/themes/${member.theme._id}`)}
-                        >
-                          {member.theme.name}
-                        </span>
-                      ) : (
-                        <span className="text-muted">N/A</span>
-                      )}
-                    </td>
-                    <td>
-                      {member.theme ? (
-                        <>
-                          <Badge bg="info">
-                            {member.theme.project?.name || 'N/A'}
-                          </Badge>
-                          {member.theme.project?.status && (
-                            <Badge 
-                              bg={member.theme.project.status === 'completed' ? 'success' : 'warning'}
-                              className="ms-2"
-                            >
-                              {member.theme.project.status}
-                            </Badge>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-muted">N/A</span>
-                      )}
-                    </td>
                     <td>{member.workDetail}</td>
                   </tr>
                 ))}
