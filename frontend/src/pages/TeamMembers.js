@@ -64,7 +64,7 @@ const TeamMembers = () => {
                   <tr key={member._id}>
                     <td>
                       {member.image ? (
-                        <img src={`http://localhost:5000${member.image}`} alt={member.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                        <img src={`https://tema-k7af.onrender.com${member.image}`} alt={member.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                       ) : (
                         <span className="text-muted">No image</span>
                       )}
