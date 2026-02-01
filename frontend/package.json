@@ -9,8 +9,8 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0"
-     "react-scripts": "5.0.1"
+    "react-router-dom": "^6.20.0",
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -19,8 +19,7 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "ajv": "^8.17.1",
-   
+    "ajv": "^8.17.1"
   },
   "browserslist": {
     "production": [
@@ -37,5 +36,8 @@
   "proxy": "http://localhost:5000",
   "overrides": {
     "ajv": "^8.17.1"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
