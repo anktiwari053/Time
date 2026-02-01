@@ -96,7 +96,7 @@ const Projects = () => {
                 onClick={() => navigate(`/projects/${project._id}`)}
               >
                 {project.image && (
-                  <Card.Img variant="top" src={`http://localhost:5000${project.image}`} alt={project.name} style={{ height: '200px', objectFit: 'cover' }} />
+                  <Card.Img variant="top" src={`https://tema-k7af.onrender.com${project.image}`} alt={project.name} style={{ height: '200px', objectFit: 'cover' }} />
                 )}
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-start mb-2">
