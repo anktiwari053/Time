@@ -36,5 +36,8 @@
   "proxy": "http://localhost:5000",
   "overrides": {
     "ajv": "^8.17.1"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

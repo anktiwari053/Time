@@ -1,13 +1,12 @@
 import axios from 'axios';
 
-const API_URL =  "https://tema-k7af.onrender.com/api";
+const API_URL = 'https://tema-k7af.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' }
 });
 
-// Attach JWT from localStorage to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
