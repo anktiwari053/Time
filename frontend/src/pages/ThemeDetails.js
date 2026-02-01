@@ -111,7 +111,7 @@ const ThemeDetails = () => {
                       </Card.Text>
                       {member.image && (
                         <img 
-                          src={`http://localhost:5000${member.image}`} 
+                          src={`https://tema-k7af.onrender.com${member.image}`} 
                           alt={member.name} 
                           style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} 
                         />
