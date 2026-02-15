@@ -7,10 +7,139 @@
     <meta name="description" content="Project Management System - View Projects, Themes, and Team Members" />
      <link rel="icon" href="%PUBLIC_URL%/ank.jpeg" />
     <title>ApexSoft Technologies</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+     .site-footer {
+  background: #0a1a2f;
+  color: #dbe2ef;
+  padding: 40px 0;
+  font-family: Arial, sans-serif;
+}
+
+.footer-container {
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: auto;
+}
+
+.footer-about,
+.footer-links,
+.footer-contact,
+.footer-social {
+  width: 23%;
+  min-width: 200px;
+  margin-bottom: 20px;
+}
+
+.footer-about h2 {
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links ul li {
+  margin-bottom: 8px;
+}
+
+.footer-links ul li a,
+.footer-social a {
+  color: #9bbad1;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-links ul li a:hover,
+.footer-social a:hover {
+  color: #38bdf8;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #1f3a5f;
+  font-size: 14px;
+  margin-top: 20px;
+  color: #94a3b8;
+}
+
+.footer-bottom a {
+  color: #94a3b8;
+  text-decoration: none;
+  margin: 0 8px;
+}
+
+.footer-bottom a:hover {
+  color: #38bdf8;
+}
+.footer-contact p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.footer-contact i {
+  color: #00bcd4;
+  font-size: 16px;
+}
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root"></div> 
+       <footer class="site-footer">
+  <div class="footer-container">
+
+    <div class="footer-about">
+      <h2>Apex Soft</h2>
+      <p>Your trusted partner for web and software solutions. Delivering quality digital experiences worldwide.</p>
+    </div>
+
+    <div class="footer-links">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Portfolio</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-contact">
+      <h3>Contact</h3>
+      <p><strong>Email:</strong> <i class="fas fa-envelope"></i> premtiwar704@gmail.com</p>
+      <p><strong>Phone:</strong> <i class="fas fa-phone"></i> +91 7447040713</p>
+      <p><strong>Address:</strong> <i class="fas fa-location-dot"> </i>Katni, Madhya Pradesh, India</p>
+    </div>
+
+    <div class="footer-social">
+      <h3>Follow Us</h3>
+      <div class="social-icons">
+        <a href="https://leetcode.com/u/anktiwari053/">leetcode</a><br>
+        <a href="https://www.linkedin.com/in/ank-tiwari/">LinkedIn</a><br>
+        <a href="https://www.instagram.com/anktiwari053">Instagram</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Apex Soft. All Rights Reserved
+    <span>|</span>
+    <a href="#">Privacy Policy</a>
+    <span>|</span>
+    <a href="#">Terms of Service</a>
+  </div>
+</footer>
   </body>
 </html>
 
